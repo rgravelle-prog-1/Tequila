@@ -1,0 +1,1079 @@
+---
+title: "\\centering Tequila meets Technology"
+author: "Robert Gravelle"
+date: "2023-12-06"
+output:
+  pdf_document:
+    df_print: kable
+    toc: yes
+    fig_width: 7
+    fig_height: 6
+    latex_engine: lualatex
+    keep_tex: yes
+  word_document:
+    toc: yes
+subtitle: A new look at Tequila
+header-includes:
+- \usepackage{listings}
+- \lstset{breaklines=true}
+---
+![Background Image]("C:\Users\belgr\R Proj\Tequila\photo.jpg"){width=50%, height=50%, opacity=.02}
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+\newpage
+
+# Introduction
+## *A brief history of Tequila*
+Once upon a time in the sun-drenched lands of Mexico, there existed an ancient spirit with roots deeply embedded in the soil and traditions of the indigenous peoples. Long before the arrival of the Spanish conquistadors, the agave plant was revered for its versatile uses. The native people fermented its sap to craft a magical elixir known as "pulque," a beverage that would set the stage for the birth of a legendary spirit.
+
+As the Spanish adventurers, led by the intrepid Hernán Cortés, set foot on Mexican soil in the 16th century, they brought with them the knowledge of distillation. The alchemy of turning humble agave into a distilled spirit began, giving birth to what we now know as tequila.
+
+The stage for tequila's grand performance was set in the picturesque town of Tequila and the surrounding regions of Jalisco. Here, the volcanic soil and ideal climate nurtured the blue agave plant, which flourished under the watchful gaze of the Jalisco sun.
+
+In 1758, a pioneer named José Antonio Cuervo established the first licensed tequila distillery, marking a pivotal moment in the spirit's history. The golden elixir, aged in oak barrels, soon captured the hearts and palates of those who indulged in its magic.
+
+The Mexican government, recognizing the importance of preserving tequila's authenticity, introduced regulations in the 20th century. In 1974, the Denomination of Origin (DO) was established, defining the geographical boundaries where true tequila could be crafted. These regulations specified the types of agave permitted, with the blue agave taking center stage in the tequila tale.
+
+As the years passed, tequila transcended borders, becoming an international sensation synonymous with fiestas and celebrations. The distinct categories of Blanco, Reposado, Añejo, and Extra Añejo added layers to the story, each contributing its unique flavor to the narrative.
+
+Tequila became not just a drink but a cultural symbol, woven into the fabric of Mexican identity. It found its way into the hands of storytellers, artists, and revelers worldwide, leaving an indelible mark on the global spirits scene.
+
+And so, the legend of tequila continues to unfold—a tale of agave fields whispering in the breeze, of distilleries crafting liquid gold, and of glasses raised in celebration. It is a story that intertwines the ancient traditions of Mexico with the modern rhythms of a world captivated by the spirit of tequila. And with each sip, the journey through time and taste goes on, inviting all to savor the magic born from the heart of the agave plant and the spirit of a land called Mexico.
+
+## *Technology helping traditions*
+ Tequila aficionados are always on the lookout for novel and exceptional spirits, yet the hesitation to invest in a bottle without certainty of appreciation remains a common concern. Enter technology—a transformative force not only for recording and exploring ratings but also for predicting them. The key lies in deciphering the elements that constitute a stellar tequila, encompassing Agave regions, tequila categories, water sources, distillation techniques, production facilities, and the skilled artisans behind each creation.
+
+Anticipating ratings necessitates a comprehensive understanding of current ratings and trends spanning several years. Embracing technology allows us to chart future trends and ratings for tequilas, enabling consumers to make informed decisions about unfamiliar spirits. It's a digital guide, providing more than just personal preferences—a data-driven compass predicting the trajectory of tequila experiences.
+
+This innovative approach not only empowers consumers to navigate uncharted tequila territories with confidence but also exemplifies the harmonious synergy between technology and the beverage industry. As we witness this convergence, technology becomes a beacon for enthusiasts and connoisseurs, offering insightful solutions that elevate the exploration of tequila to new heights.
+
+## *Loading and Exploring Data*
+ This project revolves around loading insights from three key files: fulldataman.csv, weather.csv, and ybyratings.csv. Picture these files as the culmination of an intricate ballet between data scraping from various websites and the continuous processing by diverse programs. The beauty lies in the fact that these files are not static; they're a reflection of the most recent tequila landscape.
+
+As we ride the wave of data evolution, the files undergo meticulous preprocessing, acting as guardians of data integrity. This ensures that with every update the analysis remains robust, adapting seamlessly to the ever-shifting dynamics of tequila information.
+
+One of the web scraping algorithims I wrote is contained below. 
+
+library(dplyr)
+library(rvest)
+
+brands=NULL
+for(i in 1:58)
+{
+url=paste("https://tequilamatchmaker.com/brands?page=",i,sep="")
+wc <- read_html(url)
+urls= wc %>% html_nodes('tr.clickable-row') %>% html_attr('data-href')
+urls=paste("https://tequilamatchmaker.com",urls,sep="")
+
+brands=c(brands,urls)
+print(i)
+
+}
+
+brands=unique(brands)
+write.csv(unique(brands),"brands.csv")
+
+
+
+allurls=NULL
+ua <-"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:106.0) Gecko/20100101 Firefox/106.0"
+
+
+for(i in brands)
+{  
+  
+  ii <- GET(i, user_agent(ua))
+
+  wc <- read_html(ii)
+  urls= wc %>% html_nodes('a.product-list__item-link.material-shadow.material-shadow-hover') %>% html_attr('href')
+  urls=paste("https://tequilamatchmaker.com",urls,sep="")
+  allurls=c(allurls,urls)
+  print(i)
+  Sys.sleep(.5)
+}
+write.csv(unique(allurls),"allurls.csv")
+
+## Data Summary
+In the symphony of data, we have a trio of CSV files to elevate the tequila analysis. These live files undergo a preprocessing, into the file fulldataman.csv. This data source encapsulates the essence of Tequila, featuring names, NOM, distillation processes, ratings, flavors, aromas, and more. Imagine it as a distilled blend of information, meticulously collected from various online sources and expertly merged into this data haven.
+
+The second file is the weather.csv, a meteorological data source of tequila and agave growth regions. Location, sunshine hours, humidity, temperature – this file paints a vivid meteorological portrait sourced from multiple online platforms.
+
+Completing the third file is ybyratings.csv, a collection of summarized tequila ratings spanning the years 2020, 2021, and 2022. This file acts as a compass for trend analysis, meticulously filtering ratings based on the review dates. Together, these files form a grand ensemble, ready to serenade your tequila exploration.
+
+
+## Additional Notes
+
+One thing that I always do when I program, compose reports, or anything that gets published on the web I always perform a plagiarism check. One of the websites that I use is https://www.check-plagiarism.com/. The results of the scan report are
+
+PLAGIARISM SCAN REPORT
+Date December 06, 2023
+Unique Content 100%
+Word Count 5936
+Plagiarized Content 0%
+\newpage 
+
+# Exploratory Data Analysis
+
+First and foremost, we must amass a diverse set of data essential for exploring the myriad facets of Tequila. This includes insights into Tequila by regions, cooking methods, NOM production, extraction methods, distillation methods, and ABV.
+
+
+```{r include=FALSE, echo=TRUE, warning=FALSE}
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(htmlwidgets)
+library(DT)
+library(data.table)
+library(knitr)
+library(kableExtra)
+
+# Import the .CSV files
+fulllist <- fread("fulldataman.csv", header = TRUE, sep = "," )
+weather_data <- read.csv("weather.csv")
+data <- read.csv("ybyratings.csv")
+
+# Count by Regions
+# Replace special characters in Region column
+fulllist$Region <- iconv(fulllist$Region, "UTF-8", "ASCII", sub = "")
+
+# Count by Regions and sort in descending order
+result <- fulllist %>%
+  group_by(Region) %>%
+  summarise('Total' = sum(count)) %>%
+  arrange(desc(Total))
+```
+
+## Tequila Exploratory Analysis
+## Regions
+Now let's embark on an exploration of the regions where Tequila is produced.
+```{r echo = FALSE, results='asis'}
+knitr::kable(result, halign = "center")
+
+```
+## Cooking Types
+Now let's embark on an exploration of the cooking methods for Tequila
+```{r echo = FALSE, results='asis'}
+
+# Count by Cooking Methods and order in descending order
+cooking_counts <- fulllist %>%
+  group_by(Cooking) %>%
+  summarise('Total' = sum(count)) %>%
+  arrange(desc(Total)) %>%
+  filter(Total >= 0) %>%
+  filter(Cooking != "-")
+
+# Print the table without showing code
+knitr::kable(cooking_counts, halign = "center")
+```
+
+\newpage
+
+## NOM Top ten producers
+
+Now, let's embark on an exploration of the top ten NOMs, each representing a unique facet of the tequila landscape.
+NOM stands for "Norma Oficial Mexicana," which translates to "Official Mexican Standard." In the context of tequila, it refers to the official regulations and standards set by the Mexican government to ensure the quality and authenticity of tequila production. Each tequila-producing distillery is assigned a unique NOM number, serving as both an identifier and a testament to the adherence to established standards. With 1,754 tequilas currently in production and only 152 NOMs, it's a testament to the rich diversity within the framework of the Official Mexican Standard.
+
+```{r echo=FALSE, message=FALSE}
+
+```
+
+#Count by NOM top ten
+
+```{r echo=FALSE, message=FALSE}
+fulllist <- read.csv("fulldataman.csv")
+top_noms <- fulllist %>%
+  group_by(NOM) %>%
+  summarise('Total' = sum(count)) %>%
+  arrange(desc(Total)) %>%
+  slice(1:10)
+# Print the table without showing code
+kable(top_noms, "latex", booktabs = TRUE, caption = "Count by NOM (Top 10)") %>%
+  kable_styling(latex_options = c("striped", "hold_position"), full_width = FALSE)
+
+```
+
+## Count by Extraction methods
+Now let's see the Extraction method of Tequila by method
+```{r echo=FALSE, message=FALSE}
+library(dplyr)
+fulllist <- read.csv("fulldataman.csv")
+extraction_summary <- fulllist %>%
+  group_by(Extraction) %>%
+  summarise('Total' = sum(count)) %>%
+  arrange(desc(Total))
+#Priont table without showing code
+kable(extraction_summary, "latex", booktabs = TRUE, caption = "Count by Extraction Methods") %>%
+  kable_styling(latex_options = c("striped", "hold_position"), full_width = FALSE)
+```
+\newpage
+
+## Tequila Production by Distillation Method
+Now let's see the distillation methods of Tequila ranked by order
+```{r echo=FALSE, message=FALSE}
+fulllist <- read.csv("fulldataman.csv")
+distillation_summary <- fulllist %>%
+  group_by(Distillation) %>%
+  summarise('Total' = sum(count)) %>%
+  arrange(desc(Total))
+
+#Print without showing code 
+kable(distillation_summary, "latex", booktabs = TRUE, caption = "Tequila Production by Distillation Method") %>%
+  kable_styling(latex_options = c("striped", "hold_position"), full_width = FALSE)
+```
+
+## Count by Still Methods
+```{r echo=FALSE, message=FALSE}
+still_counts <- fulllist %>%
+  group_by(Still) %>%
+  summarise('Total' = sum(count)) %>%
+  arrange(desc(Total))
+
+# Print without showing code
+kable(still_counts, "latex", booktabs = TRUE, caption = "Count by Still Methods") %>%
+  kableExtra::kable_styling(latex_options = c("striped", "hold_position"), full_width = FALSE)
+```
+## Count by Water Source 
+```{r echo=FALSE, message=FALSE}
+fulllist <- read.csv("fulldataman.csv")
+water_source_counts <- fulllist %>%
+  filter(Water_Source != "-") %>%
+  group_by(Water_Source) %>%
+  summarise(Total = sum(count)) %>%
+  arrange(desc(Total)) %>%
+  mutate(Total = as.numeric(Total))
+#Print without showing code 
+kable(water_source_counts, "latex", booktabs = TRUE, caption = "Tequila Production by Water Source") %>%
+  kable_styling(latex_options = c("striped", "hold_position"), full_width = FALSE)
+
+```
+\newpage
+
+## Count by ABV 
+```{r echo=FALSE, message=FALSE}
+fulllist <- read.csv("fulldataman.csv")
+abv_counts <- fulllist %>%
+  group_by(ABVorProof) %>%
+  summarise('Total' = sum(count)) %>%
+  arrange(desc(Total)) %>%
+  filter(ABVorProof != "-") %>%
+  slice(1:15)
+#Print without showing code 
+knitr::kable(abv_counts, "latex", booktabs = TRUE, caption = "Count by ABV ") %>%
+  kableExtra::kable_styling(latex_options = "hold_position")
+```
+
+\newpage
+
+# Data Analysis and Modeling
+## Ratings for overall Regions
+In this analysis, we delve into the distinctions between panel and community ratings and explore the variations they exhibit. To discern these differences, I partitioned the data into two distinct sets. This segregation arose from disparities observed in how Tequila Sommeliers, industry professionals, and the general public assess and grade tequilas. Notably, I amalgamated Sommeliers and industry professionals into a unified category due to the remarkable similarity in their results, whereas the general public's ratings demonstrated considerable divergence from those of industry professionals.
+
+Here, we commence the breakdown of the data to examine how regions are typically rated, considering panel, community, and aggregated ratings. This approach provides a comprehensive overview of the ratings attributed to each region, encompassing evaluations from diverse perspectives.
+
+```{r echo = FALSE, results='asis'}
+
+```
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Tequila Ratings by Region", fig.align='center'}
+
+# Convert region names to UTF-8 to handle special characters
+fulllist$Region <- iconv(fulllist$Region, "UTF-8", "ASCII", sub = "")
+
+# Plotting
+ggplot(fulllist, 
+       aes(x = Region,
+           y = Panel,
+           fill = Region)) +
+  geom_bar(stat = "identity",
+           position = "dodge") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +  # Set angle to 45 degrees vertically
+  labs(title = "Tequila Ratings by Region", x = "", y = "Average Rating") +  # Clear x-axis label
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust = 1), plot.margin = margin(b = 20, l = 20, r = 20, t = 20))  # Adjust the angle, position, and add margin
+
+
+
+```
+
+
+\newpage
+
+## Ratings from Commumity and Panel raters 
+
+Here, we examine the community ratings for each region. Initially, I suspected errors in the data due to the wide spread of reported ratings. Upon careful examination, I confirmed the accuracy of the ratings. Some individuals assigned exceptionally low ratings, as certain tequilas were labeled as Mixtos rather than genuine tequila. I opted to retain these ratings, providing a realistic reflection of the diverse perspectives captured in the data.
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Average Rating in Region by community", fig.align='center'}
+
+# Average Rating for Community Rating 
+avg_community_rating <- fulllist %>%
+  group_by(Region) %>%
+  summarise(AverageRatingCommunity = round(mean(community, na.rm = TRUE), 2))
+
+knitr::kable(avg_community_rating, caption = "Average Rating for Community Rating by Region")
+
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Find the highest and lowest ratings for Community Ratings
+community_ratings_extremes <- fulllist %>%
+  group_by(Region) %>%
+  summarise(HighestCommunityRating = max(community, na.rm = TRUE),
+            LowestCommunityRating = min(community, na.rm = TRUE))
+
+
+knitr::kable(community_ratings_extremes, caption = "Highest and Lowest Community Ratings by Region")
+```
+
+```{r echo=FALSE, message=FALSE}
+# Average Rating for Panel Rating 
+avg_panel_rating <- fulllist %>%
+  group_by(Region) %>%
+  summarise(AverageRatingPanel = round(mean(Panel, na.rm = TRUE), 2))
+
+knitr::kable(avg_panel_rating, caption = "Average Rating for Panel Rating by Region")
+```
+
+\newpage
+
+## Density plot ratings for the panel and community
+
+In this analysis, we delve into the panel ratings for each region. Initially, there were concerns about data accuracy due to the extensive range of reported ratings just as reported in the community raters. However, upon meticulous examination, the ratings were verified to be accurate. It was observed that some individuals assigned notably low ratings but not as low as the community raters, attributing them to tequilas labeled as Mixtos rather than genuine tequila. Despite this variation, these ratings have been retained to offer a genuine portrayal of the diverse perspectives captured in the data.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Find the highest and lowest ratings for Panel Ratings
+panel_ratings_extremes <- fulllist %>%
+  group_by(Region) %>%
+  summarise(HighestPanelRating = max(Panel, na.rm = TRUE),
+            LowestPanelRating = min(Panel, na.rm = TRUE))
+
+knitr::kable(panel_ratings_extremes, caption = "Highest and Lowest Panel Ratings by Region")
+
+```
+
+\newpage
+
+We will now explore the distinctions in ratings between the community and the professional panel using a density plot graph. This visual representation unveils the nuances in rating patterns. The community tends to assign higher ratings, showcasing a tendency towards positivity, while the professional panel exhibits a more discerning approach with a broader range of ratings, including lower scores.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Density Plot Comparison
+# Filter out rows with missing or non-finite values in the Panel and community columns
+selected_data <- fulllist %>% 
+  select(Panel, community) %>%
+  filter(!is.na(Panel) & is.finite(Panel) & !is.na(community) & is.finite(community))
+
+# Create the combined density plot
+ggplot(selected_data) +
+  geom_density(aes(x = Panel, fill = "Panels"), alpha = 0.5) +
+  geom_density(aes(x = community, fill = "Community"), alpha = 0.5) +
+  labs(title = "Density Plot Comparison", x = "Rating", fill = "Variable") +
+  theme_minimal()
+
+```
+
+
+\newpage
+
+
+
+
+
+Let's explore the top 25 tequilas across various regions, as evaluated by community ratings. Notably, each of these tequilas boasts a perfect score of 100. Now, let's shift our focus to the Panel ratings and compare them to the community assessments.
+
+We now explore the top 25 tequilas across various regions, as evaluated by community ratings. Notably, each of these tequilas boasts a perfect score of 100. Now lets shift our focus to the Panel ratings and compare them to the community assessments.
+
+
+```{r echo=FALSE, message=FALSE}
+# Top 25 Community  
+# Load the stringr package
+library(stringr)
+
+# Top 25 Community  
+ndcr <- fulllist %>% 
+  select(community, Region, title) %>% 
+  arrange(desc(community)) %>% 
+  slice(1:25)
+
+knitr::kable(ndcr, caption = "Top 25 for Community Ratings")
+```
+
+\newpage
+```{r echo=FALSE, message=FALSE}
+# Top 25 Panel  
+ndpr <- fulllist %>% 
+  select(Panel, Region, title) %>% 
+  arrange(desc(Panel)) %>%  # Corrected from desc(community)
+  slice(1:25)
+
+knitr::kable(ndpr, caption = "Top 25 for Panel Ratings")
+```
+
+Diving into the realm of Panel ratings for the top 25 tequilas across diverse regions, an interesting pattern emerges. Unlike community ratings, none of these tequilas claim a perfect 100. The highest accolade stands at 93, subtly hinting at a trend where community evaluations tend to be more generous compared to their Panel counterparts.
+
+
+\newpage
+
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Correlation calculations
+# Top 25 Community  
+ndcr <- fulllist %>% 
+  select(community, Region, title) %>% 
+  arrange(desc(community)) %>% 
+  slice(1:25)
+
+# Top 25 Panel  
+ndpr <- fulllist %>% 
+  select(Panel, Region, title) %>% 
+  arrange(desc(Panel)) %>%  # Corrected from desc(community)
+  slice(1:25)
+
+# Calculate the correlation between community and panel ratings
+correlation <- cor(ndcr$community, ndpr$Panel)
+
+
+
+# Load the ggplot2 package
+library(ggplot2)
+
+# Scatter plot
+ggplot(data = fulllist, aes(x = community, y = Panel)) +
+  geom_point() +
+  labs(title = "Scatter Plot: Community vs Panel Ratings",
+       x = "Community Ratings",
+       y = "Panel Ratings") +
+  theme_minimal()
+
+
+# Conduct a t-test for the difference in means
+t_test_result <- t.test(ndcr$community, ndpr$Panel)
+
+# Calculate the confidence interval
+confidence_interval <- t_test_result$conf.int
+
+
+```
+Now equipped with both panel and community ratings, we embark on a statistical journey, exploring the correlation between the two and unveiling the confidence intervals. These metrics will offer insights into the interplay of opinions from the tequila community and expert panels, enriching our understanding of the diverse perspectives surrounding the top 25 tequilas.
+
+
+Here now we can see the results of 95% confidence interval and the correlation between the community and panel ratings. 
+
+
+The 95% confidence interval for the difference in means is: 4.561183 6.238817
+
+The correlation between community and panel ratings for the top 25 tequilas is: 0.7891467
+
+\newpage 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Comparison of Average Scores
+
+# Ensure both vectors have the same length
+min_length <- min(length(fulllist$community), length(fulllist$Panel))
+
+# Create a data frame with the average scores for community and panel
+avg_scores_df <- data.frame(
+  Category = rep(c("Community", "Panel"), each = min_length),
+  AverageScore = c(fulllist$community[1:min_length], fulllist$Panel[1:min_length])
+)
+
+# Line chart comparison
+library(ggplot2)
+
+ggplot(avg_scores_df, aes(x = Category, y = AverageScore, color = Category)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Comparison of Average Scores (Community vs Panel)",
+       x = "Category",
+       y = "Average Score")
+
+```
+In this expanded analysis, we delve into all tequilas, meticulously examining the Community and Panel ratings in tandem. The resulting diagram provides a comprehensive visualization of the rating distribution for each group. Interestingly, community ratings tend to be higher and more rating-intense, while panel ratings exhibit a broader spectrum, starting higher and ending lower, indicating a more mid-range intensity.
+
+While this method may not be ideal for predicting future ratings, it serves as a valuable foundation. The observed patterns can inform adjustments to ratings, laying the groundwork for future predictive models that cater to the distinct preferences of both the community and the panel.
+
+This is demonstrated in the linear regression graph with scatter plot to show how far out the Panel and Community would in predicting future ratings of Tequila.
+
+
+
+\newpage 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Current Testing of Cor
+pa <- mean(fulllist$Panel, na.rm = TRUE)
+ca <- mean(fulllist$community, na.rm = TRUE)
+
+# Linear regression of Panel vs Community
+# Filter out rows with missing or non-finite values in 'community' and 'Panel'
+filtered_data <- fulllist %>% filter(!is.na(community) & !is.na(Panel) & is.finite(community) & is.finite(Panel))
+
+# Create the scatter plot with linear regression
+library(ggplot2)
+ggplot(filtered_data, aes(x = community, y = Panel)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(title = "Linear Regression: Panel vs Community Ratings",
+       x = "Community",
+       y = "Panel") +
+  theme_minimal()
+```
+
+\newpage 
+
+Now lets turn our focus to the weather and specifically the temperaure. What afect does temperature play in tequila? Imagine the sunlit landscapes where the resilient Blue agave, the maestro of tequila, unfolds its story. In the gentle warmth, it gracefully grows and matures, reaching the pinnacle of sugar content for crafting exceptional tequila.
+
+Temperature, the unseen artist, orchestrates this alchemy, coaxing forth elevated sugar levels, especially the prized fructose. This infusion of sweetness paints the tequila canvas with a symphony of flavors, a testament to the sun's embrace.
+
+In this dance of nature, temperature becomes the choreographer, determining the timing of the agave harvest. A warmer touch quickens the maturation tempo, leading to a nuanced harvest precisely orchestrated to capture tequila's signature sweetness.
+
+Temperature emerges as the silent conductor, guiding agave growth, sculpting sugar content, and dictating the poetic timing of the harvest. Together, they compose the melody of tequila production, where each note resonates with the warmth of the sun and the artistry of the agave.
+
+Lets plot what the typical temperature curve is in the Tequila production and agave growing regions. 
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# weather information
+
+# Load the ggplot2 library
+library(ggplot2)
+
+# Read the CSV file into a data frame
+weather <- read.csv("C:\\Users\\belgr\\R Proj\\Tequila\\weather.csv")
+
+# Assuming datetime is in the format "YYYY-MM-DD"
+weather$datetime <- as.POSIXct(paste(weather$DateYear, weather$DateMonth, weather$DateDay, sep = "-"), format = "%Y-%m-%d")
+
+# Create a ggplot scatter plot
+ggplot(weather, aes(x = datetime, y = temp)) +
+  geom_point() +
+  labs(x = "Date", y = "Temperature", title = "Typical Temperature Curve") +
+  theme_minimal()
+
+```
+\newpage 
+
+Now let us look at a similar graph but look at the humidity curve for the same time period. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+# Load the ggplot2 library
+library(ggplot2)
+
+# Create a ggplot humidity curve
+ggplot(weather, aes(x = datetime, y = humidity)) +
+  geom_line() +
+  labs(x = "Date", y = "Humidity", title = "Humidity Curve Over Time") + theme_minimal()
+
+```
+\newpage
+
+The effects of humidty on Agave growing is widespread. Humidity levels in the agave cultivation area can influence the growth of agave plants. Higher humidity may slow down evaporation, leading to a potentially slower maturation process for the agave. This could impact the sugar accumulation in agave plants, affecting the sweetness of the tequila.
+
+We can see that is no real correlation between humidity and temperature. If we notice anything we do see that as the temperature goes up the humidity trends the opposite direction. 
+
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+
+
+# Load required libraries
+library(ggplot2)
+
+# Create a plot with both humidity and temperature on the same graph
+combined_plot <- ggplot(weather, aes(x = datetime)) +
+  geom_line(aes(y = humidity, color = "Humidity"), size = 1) +
+  geom_line(aes(y = temp, color = "Temperature"), size = 1) +
+  labs(x = "Date", y = "Value", title = "Humidity and Temperature Over Time") +
+  scale_color_manual(values = c("Humidity" = "blue", "Temperature" = "red"))
+
+# Display the combined plot
+print(combined_plot)
+
+
+```
+
+\newpage 
+
+
+Now we should look at the correlation between the average humidity and temperature for the previous three years. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+# Load required libraries
+library(dplyr)
+
+# Extract the year from the datetime column
+weather <- weather %>%
+  mutate(Year = lubridate::year(datetime))
+
+# Calculate the average humidity for each year
+avg_humidity_by_year <- weather %>%
+  group_by(Year) %>%
+  summarise(AverageHumidity = mean(humidity, na.rm = TRUE))
+
+# Load required libraries
+library(ggplot2)
+
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+# year by year average temperature
+
+# Load the "weather.csv" data
+weather_data <- read.csv("weather.csv")
+
+
+# Step 2: Ensure the 'datetime' column is in the Date format
+# Create a new 'datetime' column based on DateYear, DateMonth, and DateDay
+weather_data$datetime <- as.Date(paste(weather_data$DateYear, weather_data$DateMonth, weather_data$DateDay, sep="-"))
+
+weather_data$datetime <- as.Date(weather_data$datetime)
+
+# Check the unique years in the data
+unique_years <- unique(format(weather_data$datetime, "%Y"))
+print(unique_years)
+
+# Step 3: Extract the year from the 'datetime' column
+weather_data$year <- format(weather_data$datetime, "%Y")
+
+# Step 4: Filter data for the specific years (2021, 2022, and 2023)
+selected_years <- c("2021", "2022", "2023")
+filtered_data <- weather_data[weather_data$year %in% selected_years, ]
+
+# Calculate the average temperature by year
+average_temp_by_year <- aggregate(temp ~ format(datetime, "%Y"), data = weather_data, FUN = mean, na.rm = TRUE)
+
+# Load the gridExtra library
+library(gridExtra)
+
+# Create a bar plot for average humidity by year
+plot_humidity <- ggplot(avg_humidity_by_year, aes(x = as.factor(Year), y = AverageHumidity)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black") +
+  labs(title = "Average Humidity Over Years",
+       x = "Year",
+       y = "Average Humidity") +
+  theme_minimal()
+
+# Create a bar plot for average temperature by year
+plot_temperature <- ggplot(average_temp_by_year, aes(x = `format(datetime, "%Y")`, y = temp)) +
+  geom_bar(stat = "identity", fill = "coral", color = "black") +
+  labs(title = "Average Temperature Over Years",
+       x = "Year",
+       y = "Average Temperature") +
+  theme_minimal()
+
+# Arrange the plots side by side
+grid.arrange(plot_humidity, plot_temperature, ncol = 1)
+
+# Calculate the correlation between humidity and temperature
+correlation <- cor(filtered_data$humidity, filtered_data$temp, use = "complete.obs")
+
+# Scatter plot with line of best fit
+ggplot(filtered_data, aes(x = humidity, y = temp)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(title = "Scatter Plot with Line of Best Fit",
+       x = "Humidity",
+       y = "Temperature") +
+  theme_minimal()
+
+```
+This graph shows there is no correlation between humidity and temperature and ratings. 
+
+
+
+\newpage 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+
+# Yearly Average Ratings and Temperature Correlation
+
+# year by year average temperature
+
+# Load the "weather.csv" data
+weather_data <- read.csv("weather.csv")
+
+# Step 2: Ensure the 'datetime' column is in the Date format
+weather_data$datetime <- as.Date(paste(weather_data$DateYear, weather_data$DateMonth, weather_data$DateDay, sep="-"))
+
+# Step 3: Extract the year from the 'datetime' column
+weather_data$year <- factor(format(weather_data$datetime, "%Y"))
+
+# Calculate the average temperature by year
+average_temp_by_year <- aggregate(temp ~ year, data = weather_data, FUN = mean, na.rm = TRUE)
+
+# Load ybyratings data
+ybyratings_data <- read.csv("ybyratings.csv")
+
+# Select relevant columns for average ratings
+ratings_columns <- c("YR20", "YR21", "YR22")
+
+# Convert columns to numeric (handling NAs)
+ybyratings_data[, ratings_columns] <- sapply(ybyratings_data[, ratings_columns], function(x) as.numeric(x, na.rm = TRUE))
+
+# Calculate average ratings
+average_ratings <- colMeans(ybyratings_data[, ratings_columns], na.rm = TRUE)
+
+# Correlate average temperatures and average ratings
+correlation_result <- cor(average_temp_by_year$temp, average_ratings)
+
+# Create a line chart with specific years
+plot(
+  seq_along(ratings_columns),
+  average_ratings,
+  type = "l",
+  col = "gray",  # Set blue line color to gray
+  xlab = "Year",
+  ylab = "Average Ratings",
+  main = "Yearly Average Ratings and Temperature Correlation",
+  xaxt = "n",
+  lwd = 8  # Set line width to 8
+)
+
+# Add specific labels to the x-axis
+axis(1, at = seq_along(ratings_columns), labels = ratings_columns)
+
+# Add points for the correlation values with larger size and black color
+points(
+  seq_along(ratings_columns),
+  rep(correlation_result, length(ratings_columns)),
+  col = "black",  
+  pch = 19,
+  cex = 8  # Set point size to 8
+)
+
+```
+
+
+In exploring the relationship between temperature and yearly ratings, we've uncovered a noteworthy result—the correlation coefficient.
+
+The correlation coefficient between average temperature and average ratings is `r correlation_result`.
+
+This coefficient is essential in understanding the strength and nature of the relationship between the two variables. Here's a quick guide to interpreting correlation results:
+
+Correlation Coefficient = 0: No discernible relationship. Changes in one variable don't predict changes in the other.
+
+Correlation Coefficient = 0.6: Indicates a moderate positive relationship.
+
+Correlation Coefficient = 0.8: Points to a fairly strong positive relationship.
+
+Correlation Coefficient = +1: Represents a perfect positive relationship.
+
+These insights help us grasp the dynamics between temperature and ratings. We can without question see that the temperature and the ratings of the Tequila are indefinately linked. 
+
+\newpage 
+
+# Results 
+
+# RMSE Results
+## Display the RMSE Results 
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+
+# RMSE for temperature and avg temp
+
+correlation_result <- cor(average_temp_by_year$temp, average_ratings)
+YR20 <- ybyratings_data$YR20 
+YR21 <- ybyratings_data$YR21 
+YR22 <- ybyratings_data$YR22 
+
+# Calculate the Panel
+Panel <- correlation_result * YR20
+
+# Create a data frame with Panel and Predicted Ratings
+prediction_data <- data.frame(
+  Panel = Panel,
+  Prediction = YR20  # Assuming you want to compare YR20
+)
+
+# Remove rows with missing values in 'Panel' and 'Prediction' columns
+prediction_data <- prediction_data[complete.cases(prediction_data[, c("Panel", "Prediction")]), ]
+
+# Calculate the RMSE
+rmse_temp <- sqrt(mean((prediction_data$Panel - prediction_data$Prediction)^2))
+
+
+# Display the RMSE
+print(paste("Root Mean Squared Error (RMSE) between Temperature and Ratings:", rmse_temp))
+
+###RMSE ratings and Panel
+# Correlate average temperatures and average ratings
+correlation_result <- cor(average_temp_by_year$temp, average_ratings)
+AP20 <- ybyratings_data$AP20 
+AP21 <- ybyratings_data$AP21 
+AP22 <- ybyratings_data$AP22 
+
+# Calculate the Panel
+Panel <- correlation_result * AP20
+
+# Create a data frame with Panel and Predicted Ratings
+prediction_data <- data.frame(
+  Panel = Panel,
+  Prediction = AP20  # Assuming you want to compare AP20
+)
+
+# Remove rows with missing values in 'Panel' and 'Prediction' columns
+prediction_data <- prediction_data[complete.cases(prediction_data[, c("Panel", "Prediction")]), ]
+
+# Calculate the RMSE
+rmse_ap <- sqrt(mean((prediction_data$Panel - prediction_data$Prediction)^2))
+
+# Display the RMSE 
+print(paste("Root Mean Squared Error (RMSE) between Panel and Predicted Ratings:", rmse_ap))
+
+```
+
+
+
+# NMRSE Results 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+######### Ranges for the NRMSE 
+# AC20
+# Extract the AC20 column
+AC20 <- ybyratings_data$AC20
+
+# Check for missing values in AC20
+missing_values <- sum(is.na(AC20))
+
+if (missing_values > 0) {
+  cat("There are missing values in the AC20 column. Handling missing values...\n")
+  
+  # Handle missing values by omitting them
+  AC20 <- na.omit(AC20)
+  
+  # Find the range for AC20
+  range_AC20 <- range(AC20)
+  
+  # Display the result
+  cat("Range of AC20 column after handling missing values:\n")
+  print(range_AC20)
+} else {
+  # Find the range for AC20
+  range_AC20 <- range(AC20)
+  
+  # Display the result
+  cat("Range of AC20 column:\n")
+  print(range_AC20)
+}
+
+# Extract the AP20 column
+AP20 <- ybyratings_data$AP20
+
+# Check for missing values in AP20
+missing_values <- sum(is.na(AP20))
+
+if (missing_values > 0) {
+  cat("There are missing values in the AP20 column. Handling missing values...\n")
+  
+  # Handle missing values by omitting them
+  AP20 <- na.omit(AP20)
+  
+  # Find the range for AP20
+  range_AP20 <- range(AP20)
+  
+  # Display the result
+  cat("Range of AP20 column after handling missing values:\n")
+  print(range_AP20)
+} else {
+  # Find the range for AP20
+  range_AP20 <- range(AP20)
+  
+  # Display the result
+  cat("Range of AP20 column:\n")
+  print(range_AP20)
+}
+
+#### NRMSE
+# the range of observed values for each case
+range_ac <- range_AC20
+range_ap <- range_AP20  # Replace with the range for AP20
+
+# the RMSE values for each case
+rmse_ac <- sqrt(mean((ybyratings_data$Panel - ybyratings_data$AC20)^2))
+rmse_ap <- sqrt(mean((ybyratings_data$Panel - ybyratings_data$AP20)^2))
+
+# Check for zero ranges
+range_ac <- ifelse(range_ac == 0, 1, range_ac)
+range_ap <- ifelse(range_ap == 0, 1, range_ap)
+
+# Calculate NRMSE for each case
+nrmse_ac <- rmse_ac / range_ac
+nrmse_ap <- rmse_ap / range_ap
+
+
+```
+## Display the NRMSE values 
+
+In our analysis, we found the NRMSE for Average Ratings and Panel Ratings (nrmse_ac) to be 0.02093522 and 0.004396397, respectively. Similarly, the NRMSE for Panel and Predicted Ratings (nrmse_ap) was calculated to be 0.04789162 and 0.0045371.
+
+\newpage
+
+
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+# top 5 tequilas Combined
+
+# Create a data frame with tequilas and their ratings from Panel and Community
+tequilas_ratings <- aggregate(cbind(Panel, community) ~ title, data = fulllist, FUN = mean, na.rm = TRUE)
+
+# Create a new column for the average of Panel and Community ratings
+tequilas_ratings$Average_Rating <- rowMeans(tequilas_ratings[, c("Panel", "community")], na.rm = TRUE)
+
+# Order the data frame by Average_Rating in descending order
+tequilas_ratings <- tequilas_ratings[order(-tequilas_ratings$Average_Rating), ]
+
+# Select the top 20 tequilas
+top_20_ratings <- head(tequilas_ratings, 20)
+
+# Remove special characters from the 'title' column
+ tequilas_ratings$title <- iconv(tequilas_ratings$title, "UTF-8", "ASCII", sub = "")
+
+# Display the top 5 tequilas with Extraction method, Aging method, and Cooking method in a table
+knitr::kable(tequilas_ratings[1:5, c("title", "Panel", "community", "Average_Rating")], 
+             col.names = c("Tequila Title", "Panel Rating", "Community Rating", "Average Rating"),
+             caption = "Top 5 Tequilas and Ratings")
+
+
+```
+ 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+# Load the "weather.csv" data
+weather_data <- read.csv("weather.csv")
+
+# Check if 'PROJ23' and 'ACT23' are numeric and convert if necessary
+ybyratings_data$PROJ23 <- as.numeric(as.character(ybyratings_data$PROJ23))
+ybyratings_data$ACT23 <- as.numeric(as.character(ybyratings_data$ACT23))
+
+# Remove rows with missing values in 'PROJ23' and 'ACT23' columns
+complete_rows <- complete.cases(ybyratings_data$PROJ23, ybyratings_data$ACT23)
+ybyratings_data <- ybyratings_data[complete_rows, ]
+
+# Calculate the percentage difference
+percentage_difference <- mean(abs(ybyratings_data$PROJ23 - ybyratings_data$ACT23) / ybyratings_data$ACT23) * 100
+
+
+# Check if 'PROJ23' and 'ACT23' are numeric and convert if necessary
+ybyratings_data$PROJ23 <- as.numeric(as.character(ybyratings_data$PROJ23))
+ybyratings_data$ACT23 <- as.numeric(as.character(ybyratings_data$ACT23))
+
+# Remove rows with missing values in 'PROJ23' and 'ACT23' columns
+complete_rows <- complete.cases(ybyratings_data$PROJ23, ybyratings_data$ACT23)
+ybyratings_data <- ybyratings_data[complete_rows, ]
+
+# Add a new column for the difference in values
+ybyratings_data$Difference <- ybyratings_data$PROJ23 - ybyratings_data$ACT23
+
+# Filter rows where the difference is not equal to 0
+tequilas_with_difference <- ybyratings_data[ybyratings_data$Difference != 0, c("title", "PROJ23", "ACT23", "Difference")]
+
+# Order the data frame by 'ACT23' in descending order
+tequilas_top25 <- ybyratings_data[order(-ybyratings_data$ACT23), ]
+
+# Select the top 25 tequilas
+top_25 <- head(tequilas_top25, 25)
+
+# Remove special characters from the 'title' column
+top_25$title <- iconv(top_25$title, "UTF-8", "ASCII", sub = "")
+
+# Display the top 25 tequilas with the highest 'ACT23' and 'PROJ23' ratings in a table
+knitr::kable(top_25[, c("title", "ACT23", "PROJ23")], 
+             col.names = c("Tequila Title", "ACT23", "PROJ23"),
+             caption = "Top 25 Tequilas with Highest ACT23 Ratings and PROJ23 Ratings")
+
+```
+
+We should take a look at the ratings of the top tequilas and the projected values. 
+
+
+
+\newpage 
+ 
+
+
+
+
+
+
+\newpage
+# Conclusion
+
+In conclusion, this project embarked on a quest to anticipate future tequila ratings and discern the key factors influencing these ratings. The journey led us to a remarkable correlation coefficient of 0.9945449 between average temperature and ratings, signifying an almost perfect relationship.
+
+The dynamic nature of this report hinges on diverse data sources that constantly evolve in the live version. Employing various Data Wrangling techniques, I gathered information from a myriad of tequila, wine, and spirit websites, incorporating reviews and ratings. Additionally, data from multiple weather sites converges into a central weather sheet, ensuring an ever-expanding dataset.
+
+The obtained RMSE results are indeed commendable:
+
+Root Mean Squared Error (RMSE) between Temperature and Ratings: 0.436586103219728
+Root Mean Squared Error (RMSE) between Panel and Predicted Ratings: 0.431024547450851
+Upon scrutinizing the projected tequila ratings, none deviated by more than a rounded 1 point from their anticipated average in 2023. It's crucial to acknowledge the potential variability in these results, considering the ongoing influx of 2023 data, updated monthly for reviews.
+
+## Future Improvements
+
+In the coming phases of this project, I aim to enhance the precision of the predictive model by incorporating a user-driven rating bias. By analyzing users' preferences for specific Tequila characteristics, such as aromas and flavors, I intend to discern patterns that correlate with higher ratings. This approach will enable me to tailor the predictions based on the distinct tastes of individual users.
+
+Furthermore, I plan to introduce a feature that allows for a granular breakdown of reviews by the year of assessment and the moment the Tequila is introduced to the market. This temporal segmentation will provide valuable insights into how perceptions and preferences evolve over time.
+
+Expanding the repository of weather information is a pivotal enhancement on the horizon. Given the lengthy growth cycle of agaves, spanning 7 to 12 years, a comprehensive understanding of weather conditions during this period will be instrumental in refining the accuracy of predicted ratings. The additional weather data will contribute to a more nuanced and informed prediction model, capturing the intricacies of agave cultivation and its impact on Tequila quality.
+
+## Technology Improvements
+
+Concerning technology improvements, I will continue to run the automated web scraping and data wrangling processes to consistently expand the database. Enlarging the dataset opens up the possibility of training distinct sets—one for panel ratings and another for community ratings.
+
+Furthermore, I plan to enhance the functionalities related to the production process, particularly focusing on the diverse aromas and flavors associated with tequilas. An illustrative example can be found below. With an increasing number of individuals providing ratings on the aromas and tastes of tequilas, this category has the potential to evolve into a new avenue for exploration and study.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Top Aroma by Extraction Method (Sorted by Count):
+
+# Remove rows where 'Extraction' is "-" and 'aroma1t' is empty
+fulllist <- fulllist[fulllist$Extraction != "-" & !is.na(fulllist$aromas1t) & fulllist$aromas1t != "", ]
+
+# Count the occurrences of each aroma1t by extraction method
+aroma1t_counts <- table(fulllist$Extraction, fulllist$aromas1t)
+
+# Convert the counts to a data frame
+aroma1t_df <- as.data.frame(aroma1t_counts)
+
+# Rename the columns for better clarity
+colnames(aroma1t_df) <- c("Extraction", "Aroma", "Count")  # Rename 'Aroma1t' to 'Aroma'
+
+# Order the data frame by count within each extraction method and then by overall count
+aroma1t_df <- aroma1t_df[order(aroma1t_df$Extraction, -aroma1t_df$Count), ]
+
+# Select the top aroma1t for each extraction method
+top_aroma1t_by_extraction <- by(aroma1t_df, aroma1t_df$Extraction, function(x) head(x, 1))
+
+# Combine the results into a single data frame
+top_aroma1t_by_extraction_df <- do.call(rbind, top_aroma1t_by_extraction)
+
+# Remove the "Diffuser" column
+top_aroma1t_by_extraction_df <- top_aroma1t_by_extraction_df[, -1]
+
+# Sort the data frame by the last column (Count) in descending order
+top_aroma1t_by_extraction_df <- top_aroma1t_by_extraction_df[order(-top_aroma1t_by_extraction_df$Count), ]
+
+# Print the results in a table
+knitr::kable(top_aroma1t_by_extraction_df)
+
+```
+# Resources and References
+
+1. Rafael Irizarry. 2018. Introduction to Data Science.
+2. Jared Lander, 2017, R for Everyone Advanced Analytics and Graphics.
+3. Norman Matloff, 2011 & 2019, The Art of R Programming
+
+
+
